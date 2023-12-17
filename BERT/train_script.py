@@ -178,10 +178,10 @@ def train(training_config):
             
         test_loss = loss_sum_test / len(dataloader_test)
         test_losses.append(test_loss)
-        train_acc = correct / len(dataloader_train.dataset)
+        test_acc = correct / len(dataloader_test.dataset)
 
 
-        print(f'Epoch: {epoch+1}, Train Loss: {train_loss:.6f}, Test Loss: {test_loss:.6f}')
+        print(f'Epoch: {epoch+1} \n Train Loss: {train_loss:.6f}, Train Accuracy: {train_acc:.6f} \n train Test Loss: {test_loss:.6f}, Test Accuracy: {test_acc:.6f}')
 
 
     '''    
