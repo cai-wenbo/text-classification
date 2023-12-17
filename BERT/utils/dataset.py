@@ -4,7 +4,7 @@ import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
 import pandas as pd
-from transformers import AutoTokenizer
+from transformers import BertTokenizer
 import csv
 import re
 
