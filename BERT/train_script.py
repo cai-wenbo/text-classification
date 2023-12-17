@@ -132,7 +132,6 @@ def train(training_config):
             loss_sum_train += torch.sum(loss)
             step_losses.append(loss)
 
-            print(loss)
 
 
         model.eval() 
@@ -153,6 +152,8 @@ def train(training_config):
             
         train_loss = loss_sum_train / len(dataloader_train)
         test_loss = loss_sum_test / len(dataloader_test)
+        train_losses.append(train_loss)
+        test_losses.append(test_loss)
         print(f'Epoch: {epoch+1}, Train Loss: {train_loss:.6f}, Test Loss: {test_loss:.6f}')
 
 
