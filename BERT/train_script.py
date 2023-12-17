@@ -6,8 +6,11 @@ from torch.utils.data import DataLoader
 from torch.optim import AdamW
 import transformers
 from transformers import BertForSequenceClassification
-
+from transformers import get_linear_schedule_with_warmup
 from utils.dataset import HotelDataset
+import json
+import os
+
 
 
 
@@ -16,9 +19,7 @@ def train(training_config):
 
 
     '''
-    input:
-    output: 
-    load model
+    load model and the history
     '''
     #  If you have checked the source code of BertForSequenceClassification
     #  you will notice it works in the same way as a BERT+FNN, except it adds
@@ -29,6 +30,24 @@ def train(training_config):
 
     model = model.to(device)
 
+    #  load the losses history
+    step_losses = list()
+    if os.path.exists(training_config['step_losses_pth']):
+        with open(training_config['step_losses'], 'r') as file:
+            step_losses = json.load(file)
+            file.close()
+
+    train_losses = list()
+    if os.path.exists(training_config['train_losses_pth']):
+        with open(training_config['train_losses'], 'r') as file:
+            train_losses = json.load(file)
+            file.close()
+    
+    test_losses = list()
+    if os.path.exists(training_config['test_losses_pth']):
+        with open(training_config['test_losses'], 'r') as file:
+            test_losses = json.load(file)
+            file.close()
 
     '''
     dataloader
@@ -72,6 +91,12 @@ def train(training_config):
             eps = 1e-8
             )
 
+    scheduler = get_linear_schedule_with_warmup(
+            optimizer,
+            num_warmup_steps = 0, # Default value in run_glue.py
+            num_training_steps = len(dataloader_train) * training_config['num_of_epochs']
+            )
+
 
     '''
     creterian
@@ -83,12 +108,11 @@ def train(training_config):
     '''
     train_loops
     '''
-    train_loss_x = list()
-    train_loss_y = list()
     for epoch in range(training_config['num_of_epochs']):
         loss_sum_train = 0
         loss_sum_test  = 0
-
+        
+        model.train()
         #  train loop
         for i, batch in enumerate(dataloader_train):
             batch = tuple(t.to(device) for t in batch)
@@ -104,25 +128,66 @@ def train(training_config):
 
             loss = creterian(outputs[0].view(-1, 2), b_label_tensor.view(-1))
             optimizer.step()
+            scheduler.step()
             loss_sum_train += torch.sum(loss)
+            step_losses.append(loss)
 
             print(loss)
 
 
+        model.eval() 
+        #  train loop
+        for i, batch in enumerate(dataloader_test):
+            batch = tuple(t.to(device) for t in batch)
+            b_sentence_tensor, b_mask_tensor, b_label_tensor = batch
             
+            with torch.no_grad():
+                outputs = model(
+                        b_sentence_tensor, 
+                        token_type_ids = None,
+                        attention_mask = b_mask_tensor
+                        )
+
+            loss = creterian(outputs[0].view(-1, 2), b_label_tensor.view(-1))
+            loss_sum_test += torch.sum(loss)
+            
+        train_loss = loss_sum_train / len(dataloader_train)
+        test_loss = loss_sum_test / len(dataloader_test)
+        print(f'Epoch: {epoch+1}, Train Loss: {train_loss:.6f}, Test Loss: {test_loss:.6f}')
+
+
     '''    
-    save model 
+    save model and data
     '''
+
+    model = model.to('cpu')
+    model.save_pretrained(training_config['model_path_dst'])
+
+    #  save the loss of the steps
+    with open(training_config['step_losses_pth'], 'w') as file:
+        json.dump(step_losses, file)
+        file.close()
+
+    with open(training_config['train_losses_pth'], 'w') as file:
+        json.dump(train_losses, file)
+        file.close()
+    
+    with open(training_config['test_losses_pth'], 'w') as file:
+        json.dump(test_losses, file)
+        file.close()
 
 
 
 if __name__ == "__main__":
     training_config = dict()
     training_config['num_of_epochs']        = 5
-    training_config['batch_size']           = 10
+    training_config['batch_size']           = 2
     training_config['model_path_dst']       = './saved_models/'
     #  training_config['checkpoint'] = 0
     training_config['learning_rate']        = 1e-4
+    training_config['step_losses_pth']  = './step_losses.json'
+    training_config['train_losses_pth']  = './train_losses.json'
+    training_config['test_losses_pth']  = './test_losses.json'
     #  training_config['model_path_src']    = 'saved_embedding.pth'
     train(training_config)
     
