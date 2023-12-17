@@ -34,19 +34,19 @@ def train(training_config):
     #  load the losses history
     step_losses = list()
     if os.path.exists(training_config['step_losses_pth']):
-        with open(training_config['step_losses'], 'r') as file:
+        with open(training_config['step_losses_pth'], 'r') as file:
             step_losses = json.load(file)
             file.close()
 
     train_losses = list()
     if os.path.exists(training_config['train_losses_pth']):
-        with open(training_config['train_losses'], 'r') as file:
+        with open(training_config['train_losses_pth'], 'r') as file:
             train_losses = json.load(file)
             file.close()
     
     test_losses = list()
     if os.path.exists(training_config['test_losses_pth']):
-        with open(training_config['test_losses'], 'r') as file:
+        with open(training_config['test_losses_pth'], 'r') as file:
             test_losses = json.load(file)
             file.close()
 
