@@ -142,7 +142,7 @@ def train(training_config):
             loss_sum_train += loss_scalar
             step_losses.append(loss_scalar)
 
-            predictions = torch.argmax(logits, dim=1)
+            predictions = torch.argmax(outputs[0], dim=1)
             correct += (predictions == b_label_tensor).sum().item()
 
 
@@ -173,7 +173,7 @@ def train(training_config):
             loss = creterian(outputs[0].view(-1, 2), b_label_tensor.view(-1))
             loss_sum_test += torch.sum(loss).item()
 
-            predictions = torch.argmax(logits, dim=1)
+            predictions = torch.argmax(outputs[0], dim=1)
             correct += (predictions == b_label_tensor).sum().item()
             
         test_loss = loss_sum_test / len(dataloader_test)
