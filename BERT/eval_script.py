@@ -81,9 +81,8 @@ def eval(eval_config):
 
 if __name__ == "__main__":
     eval_config                     = dict()
-    eval_config['num_of_epochs']    = 5
     eval_config['batch_size']       = 2
     eval_config['model_path_src']    = './saved_models/'
-    train(eval_config)
+    eval(eval_config)
     
 
