@@ -136,8 +136,9 @@ def train(training_config):
             loss.backward()
             optimizer.step()
             scheduler.step()
-            loss_sum_train += torch.sum(loss)
-            step_losses.append(loss)
+            loss_scalar = torch.sum(loss).item()
+            loss_sum_train += loss_scalar
+            step_losses.append(loss_scalar)
 
 
 
