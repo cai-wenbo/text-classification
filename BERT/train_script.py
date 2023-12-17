@@ -156,7 +156,7 @@ def train(training_config):
                         )
 
             loss = creterian(outputs[0].view(-1, 2), b_label_tensor.view(-1))
-            loss_sum_test += torch.sum(loss)
+            loss_sum_test += torch.sum(loss).item()
             
         train_loss = loss_sum_train / len(dataloader_train)
         test_loss = loss_sum_test / len(dataloader_test)
