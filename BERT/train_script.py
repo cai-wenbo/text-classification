@@ -10,6 +10,7 @@ from transformers import get_linear_schedule_with_warmup
 from utils.dataset import HotelDataset
 import json
 import os
+import argparse
 
 
 
@@ -207,15 +208,24 @@ def train(training_config):
 
 
 if __name__ == "__main__":
-    training_config                     = dict()
-    training_config['num_of_epochs']    = 5
-    training_config['batch_size']       = 2
-    training_config['model_path_dst']   = './saved_models/'
-    training_config['learning_rate']    = 1e-5
-    training_config['step_losses_pth']  = './trails/step_losses.json'
-    training_config['train_losses_pth'] = './trails/train_losses.json'
-    training_config['test_losses_pth']  = './trails/test_losses.json'
-    training_config['model_path_src']    = './saved_models/'
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--num_of_epochs"    , type=int   , help="number of epochs"                                  , default=5)
+    parser.add_argument("--batch_size"       , type=int   , help="batch size"                                        , default=2)
+    parser.add_argument("--learning_rate"    , type=float , help="learning rate"                                     , default=1e-5)
+    parser.add_argument("--model_path_dst"   , type=str   , help="the directory to save model"                       , default='./saved_models/')
+    parser.add_argument("--model_path_src"   , type=str   , help="the directory to load model"                       , default='./saved_models/')
+    parser.add_argument("--step_losses_pth"  , type=str   , help="the path of the json file that saves step losses"  , default='./trails/step_losses.json')
+    parser.add_argument("--train_losses_pth" , type=str   , help="the path of the json file that saves train losses" , default='./trails/train_losses.json')
+    parser.add_argument("--test_losses_pth"  , type=str   , help="the path of the json file that saves test losses"  , default='./trails/test_losses.json')
+
+    
+    args = parser.parse_args()
+
+    training_config = dict()
+    for arg in vars(args):
+        training_config[arg] = getattr(args, arg)
+
     train(training_config)
     
 
