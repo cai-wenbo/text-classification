@@ -24,9 +24,10 @@ def train(training_config):
     #  If you have checked the source code of BertForSequenceClassification
     #  you will notice it works in the same way as a BERT+FNN, except it adds
     #  a dropout layer.
-    model = BertForSequenceClassification.from_pretrained("bert-base-chinese", num_labels = 2)
-    if training_config.get('model_path_src') is not None:
-        model = BertForSequenceClassification.from_pretrained(training_config['saved_embedding'], num_labels = 2)
+    if os.path.exists(training_config['model_path_src']):
+        model = BertForSequenceClassification.from_pretrained(training_config['model_path_src'])
+    else:
+        model = BertForSequenceClassification.from_pretrained("bert-base-chinese", num_labels = 2)
 
     model = model.to(device)
 
@@ -116,7 +117,7 @@ def train(training_config):
 
     for epoch in range(training_config['num_of_epochs']):
         loss_sum_train = 0
-        loss_sum_test  = 0
+        correct        = 0
         
         model.train()
         #  train loop
@@ -132,6 +133,7 @@ def train(training_config):
                     attention_mask = b_mask_tensor
                     )
 
+
             loss = creterian(outputs[0].view(-1, 2), b_label_tensor.view(-1))
             loss.backward()
             optimizer.step()
@@ -140,7 +142,20 @@ def train(training_config):
             loss_sum_train += loss_scalar
             step_losses.append(loss_scalar)
 
+            predictions = torch.argmax(logits, dim=1)
+            correct += (predictions == b_label_tensor).sum().item()
 
+
+        train_loss = loss_sum_train / len(dataloader_train)
+        train_losses.append(train_loss)
+        train_acc = correct / len(dataloader_train.dataset)
+
+
+
+
+
+        loss_sum_test = 0
+        correct       = 0
 
         model.eval() 
         #  train loop
@@ -157,11 +172,15 @@ def train(training_config):
 
             loss = creterian(outputs[0].view(-1, 2), b_label_tensor.view(-1))
             loss_sum_test += torch.sum(loss).item()
+
+            predictions = torch.argmax(logits, dim=1)
+            correct += (predictions == b_label_tensor).sum().item()
             
-        train_loss = loss_sum_train / len(dataloader_train)
         test_loss = loss_sum_test / len(dataloader_test)
-        train_losses.append(train_loss)
         test_losses.append(test_loss)
+        train_acc = correct / len(dataloader_train.dataset)
+
+
         print(f'Epoch: {epoch+1}, Train Loss: {train_loss:.6f}, Test Loss: {test_loss:.6f}')
 
 
@@ -192,11 +211,11 @@ if __name__ == "__main__":
     training_config['num_of_epochs']    = 5
     training_config['batch_size']       = 2
     training_config['model_path_dst']   = './saved_models/'
-    training_config['learning_rate']    = 1e-4
-    training_config['step_losses_pth']  = './step_losses.json'
-    training_config['train_losses_pth'] = './train_losses.json'
-    training_config['test_losses_pth']  = './test_losses.json'
-    #  training_config['model_path_src']    = 'saved_embedding.pth'
+    training_config['learning_rate']    = 1e-5
+    training_config['step_losses_pth']  = './trails/step_losses.json'
+    training_config['train_losses_pth'] = './trails/train_losses.json'
+    training_config['test_losses_pth']  = './trails/test_losses.json'
+    training_config['model_path_src']    = './saved_models/'
     train(training_config)
     
 
