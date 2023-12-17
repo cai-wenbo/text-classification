@@ -31,7 +31,7 @@ class HotelDataset(Dataset):
         
 
         #  tokenize the text and pad and truncate
-        tokenizer = AutoTokenizer.from_pretrained("bert-base-chinese").to(self.device)
+        tokenizer = BertTokenizer.from_pretrained("bert-base-chinese").to(self.device)
         encoding = tokenizer(sentences, padding = 'max_length', truncation=True, max_length=max_length)
         
         self.encoded_sentences = encoding['input_ids']
