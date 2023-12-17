@@ -108,6 +108,12 @@ def train(training_config):
     '''
     train_loops
     '''
+    
+    if torch.cuda.device_count() > 1:
+        print(f"Using {torch.cuda.device_count()} GPUs.")
+        model = nn.DataParallel(model)
+
+
     for epoch in range(training_config['num_of_epochs']):
         loss_sum_train = 0
         loss_sum_test  = 0

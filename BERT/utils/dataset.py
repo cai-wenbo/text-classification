@@ -16,7 +16,6 @@ and extract the (text, label) pairs
 
 class HotelDataset(Dataset):
     def __init__(self, data_path, max_length):
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
         df = pd.read_csv(data_path, delimiter='\t', header=None, names=['label', 'sentence'])
 
         sentences = df.sentence.values
@@ -31,7 +30,7 @@ class HotelDataset(Dataset):
         
 
         #  tokenize the text and pad and truncate
-        tokenizer = BertTokenizer.from_pretrained("bert-base-chinese").to(self.device)
+        tokenizer = BertTokenizer.from_pretrained("bert-base-chinese")
         encoding = tokenizer(sentences, padding = 'max_length', truncation=True, max_length=max_length)
         
         self.encoded_sentences = encoding['input_ids']
