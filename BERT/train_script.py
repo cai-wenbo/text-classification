@@ -127,6 +127,7 @@ def train(training_config):
                     )
 
             loss = creterian(outputs[0].view(-1, 2), b_label_tensor.view(-1))
+            loss.backward()
             optimizer.step()
             scheduler.step()
             loss_sum_train += torch.sum(loss)
