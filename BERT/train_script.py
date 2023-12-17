@@ -168,7 +168,7 @@ def train(training_config):
     save model and data
     '''
 
-    model = model.to('cpu')
+    model = model.to('cpu').module
     model.save_pretrained(training_config['model_path_dst'])
 
     #  save the loss of the steps
@@ -187,14 +187,13 @@ def train(training_config):
 
 
 if __name__ == "__main__":
-    training_config = dict()
-    training_config['num_of_epochs']        = 5
-    training_config['batch_size']           = 2
-    training_config['model_path_dst']       = './saved_models/'
-    #  training_config['checkpoint'] = 0
-    training_config['learning_rate']        = 1e-4
+    training_config                     = dict()
+    training_config['num_of_epochs']    = 5
+    training_config['batch_size']       = 2
+    training_config['model_path_dst']   = './saved_models/'
+    training_config['learning_rate']    = 1e-4
     training_config['step_losses_pth']  = './step_losses.json'
-    training_config['train_losses_pth']  = './train_losses.json'
+    training_config['train_losses_pth'] = './train_losses.json'
     training_config['test_losses_pth']  = './test_losses.json'
     #  training_config['model_path_src']    = 'saved_embedding.pth'
     train(training_config)
